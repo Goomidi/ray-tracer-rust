@@ -1,6 +1,6 @@
 use crate::vec::Vec3;
 pub struct Camera {
-    pub aspect: f64,
+    pub aspect_ratio: f64,
     pub viewport_height: f64,
     pub viewport_width: f64,
     pub focal_length: f64,
@@ -13,9 +13,9 @@ pub struct Camera {
 
 impl<'a> Camera {
     pub fn new() -> Self {
-        let aspect: f64 = 16.0 / 9.0;
-        let viewport_heigth: f64 = 1.0;
-        let viewport_width: f64 = aspect * viewport_heigth;
+        let aspect_ratio: f64 = 16.0 / 9.0;
+        let viewport_heigth: f64 = 2.0;
+        let viewport_width: f64 = aspect_ratio * viewport_heigth;
         let focal_length: f64 = 1.0;
 
         let origin: Vec3 = Vec3::new(0.0, 0.0, 0.0);
@@ -23,7 +23,7 @@ impl<'a> Camera {
         let vertical: Vec3 = Vec3::new(0.0, viewport_heigth, 0.0);
 
         Self {
-            aspect: aspect,
+            aspect_ratio: aspect_ratio,
             viewport_height: viewport_heigth,
             viewport_width: viewport_width,
             focal_length: 1.0,
@@ -32,8 +32,8 @@ impl<'a> Camera {
             horizontal: Vec3::new(viewport_width, 0.0, 0.0),
             vertical: Vec3::new(0.0, viewport_heigth, 0.0),
             lower_left_corner: &origin
-                - &horizontal
-                - &vertical
+                - &horizontal / 2.0
+                - &vertical / 2.0
                 - Vec3::new(0.0, 0.0, focal_length),
         }
     }

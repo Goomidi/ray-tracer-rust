@@ -1,5 +1,12 @@
+use crate::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::vec::Vec3;
+use std::rc::Rc;
+
+pub trait Hittable {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord)
+        -> (bool, Rc<MaterialType>);
+}
 
 pub struct HitRecord {
     pub p: Vec3,
@@ -17,8 +24,4 @@ impl HitRecord {
             -*outward_normal
         };
     }
-}
-
-pub trait Hittable {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
 }

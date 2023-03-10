@@ -1,3 +1,5 @@
+use num::complex::ComplexFloat;
+
 use crate::utils::{random_boundaries, random_number};
 
 use core::panic;
@@ -83,6 +85,28 @@ impl Vec3 {
             }
         }
         panic!("The function shouldn't be here!");
+    }
+
+    pub fn random_unit_vector() -> Self {
+        Self::unit_vector(&Self::random_in_unit_sphere())
+    }
+
+    pub fn random_in_hemisphere(normal: &Self) -> Self {
+        let in_unit_sphere = Self::random_in_unit_sphere();
+
+        if normal.dot(&in_unit_sphere) > 0.0 {
+            return in_unit_sphere;
+        }
+        -in_unit_sphere
+    }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        (self.x.abs() < s) && (self.y.abs() < s) && (self.z.abs() < s)
+    }
+
+    pub fn reflect(v: &Self, n: &Self) -> Self {
+        v - n * v.dot(n) * 2.0
     }
 }
 
