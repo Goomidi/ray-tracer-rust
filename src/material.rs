@@ -10,12 +10,15 @@ pub trait LightReflection {
 pub enum MaterialType {
     Lambertian(Lambertian),
     Metal(Metal),
+    Dielectric(Dielectric),
 }
+
 impl MaterialType {
     pub fn get_albedo(&self) -> Color {
         let albedo = match self {
             MaterialType::Lambertian(l) => l.albedo,
             MaterialType::Metal(m) => m.albedo,
+            _ => Color::new(0.0, 0.0, 0.0),
         };
         albedo
     }
@@ -27,12 +30,21 @@ impl MaterialType {
         };
         fuzz
     }
+
+    pub fn get_ir(&self) -> f64 {
+        let ir = match self {
+            MaterialType::Dielectric(d) => d.ir,
+            _ => 0.0,
+        };
+        ir
+    }
 }
 impl LightReflection for MaterialType {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color) -> (bool, Vec3) {
         let result = match self {
             MaterialType::Lambertian(l) => l.scatter(r_in, rec, attenuation),
             MaterialType::Metal(m) => m.scatter(r_in, rec, attenuation),
+            MaterialType::Dielectric(d) => d.scatter(r_in, rec, attenuation),
         };
         result
     }
@@ -92,5 +104,35 @@ impl LightReflection for Metal {
                 > 0.0,
             scatter_direction,
         )
+    }
+}
+
+pub struct Dielectric {
+    pub ir: f64,
+}
+
+impl Dielectric {
+    pub fn new(ir: f64) -> Self {
+        Dielectric { ir }
+    }
+}
+
+impl LightReflection for Dielectric {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color) -> (bool, Vec3) {
+        *attenuation = Color::new(1.0, 1.0, 1.0);
+
+        let refraction_ratio = if rec.front_face {
+            1.0 / self.ir
+        } else {
+            self.ir
+        };
+
+        let scatter_direction = Vec3::refract(
+            &Vec3::unit_vector(r_in.direction()),
+            &rec.normal,
+            refraction_ratio,
+        );
+
+        (true, scatter_direction)
     }
 }

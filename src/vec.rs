@@ -32,6 +32,10 @@ impl Vec3 {
         value.sqrt()
     }
 
+    pub fn norm_squared(&self) -> f64 {
+        self.x.powf(2.0) + self.y.powf(2.0) + self.z.powf(2.0)
+    }
+
     pub fn dot(&self, other: &Self) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
@@ -102,6 +106,14 @@ impl Vec3 {
 
     pub fn reflect(v: &Self, n: &Self) -> Self {
         v - n * v.dot(n) * 2.0
+    }
+
+    pub fn refract(uv: &Self, n: &Self, etai_over_etat: f64) -> Self {
+        let cos_theta = f64::min(-uv.dot(n), etai_over_etat);
+
+        let r_out_perp = (uv + n * cos_theta) * etai_over_etat;
+        let r_out_parallel = n * (-f64::sqrt((r_out_perp.norm_squared() - 1.0).abs()));
+        r_out_perp + r_out_parallel
     }
 }
 

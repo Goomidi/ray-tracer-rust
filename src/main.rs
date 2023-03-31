@@ -13,7 +13,7 @@ use camera::Camera;
 use color::Color;
 use hittable::{HitRecord, Hittable};
 use hittable_list::HittableList;
-use material::{Lambertian, LightReflection, MaterialType, Metal};
+use material::{Dielectric, Lambertian, LightReflection, MaterialType, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
@@ -29,8 +29,8 @@ fn main() {
 
     // World
     let material_ground = MaterialType::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = MaterialType::Lambertian(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = MaterialType::Metal(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_center = MaterialType::Dielectric(Dielectric::new(1.5));
+    let material_left = MaterialType::Dielectric(Dielectric::new(1.5));
     let material_right = MaterialType::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     let center_ground = Vec3::new(0.0, -100.5, -1.0);
