@@ -1,4 +1,4 @@
-use crate::material::{Material, MaterialType};
+use crate::material::MaterialType;
 use crate::ray::Ray;
 use crate::vec::Vec3;
 use std::rc::Rc;

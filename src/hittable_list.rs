@@ -1,9 +1,10 @@
+use crate::color::Color;
 use crate::hittable::{HitRecord, Hittable};
+use crate::material::Lambertian;
 use crate::material::MaterialType;
 use crate::ray::Ray;
 use crate::vec::Vec3;
 use std::rc::Rc;
-
 pub struct HittableList<T> {
     pub objects: Vec<Rc<T>>,
 }
@@ -39,7 +40,9 @@ impl<'a, T: Hittable> Hittable for HittableList<T> {
             front_face: false,
         };
         let mut hit_anything = false;
-        let mut material: Rc<MaterialType>;
+        let mut material: Rc<MaterialType> = Rc::new(MaterialType::Lambertian(Lambertian::new(
+            Color::new(0.8, 0.8, 0.0),
+        )));
         let mut closest_so_far = t_max;
 
         for object in &self.objects {

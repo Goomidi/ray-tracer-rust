@@ -13,11 +13,11 @@ use camera::Camera;
 use color::Color;
 use hittable::{HitRecord, Hittable};
 use hittable_list::HittableList;
-use material::{Lambertian, MaterialType, Metal};
+use material::{Lambertian, LightReflection, MaterialType, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
-use utils::{degrees_to_radian, random_boundaries, random_number};
+use utils::random_number;
 use vec::Vec3;
 fn main() {
     // Image
@@ -30,24 +30,24 @@ fn main() {
     // World
     let material_ground = MaterialType::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = MaterialType::Lambertian(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = MaterialType::Metal(Metal::new(Color::new(0.8, 0.8, 0.8)));
-    let material_right = MaterialType::Metal(Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let material_left = MaterialType::Metal(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = MaterialType::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
-    let center1 = Vec3::new(0.0, -100.5, -1.0);
-    let center2 = Vec3::new(0.0, 0.0, -1.0);
-    let center3 = Vec3::new(0.0, 0.0, -1.0);
-    let center4 = Vec3::new(1.0, -100.5, -1.0);
+    let center_ground = Vec3::new(0.0, -100.5, -1.0);
+    let center = Vec3::new(0.0, 0.0, -1.0);
+    let center_left = Vec3::new(-1.0, 0.0, -1.0);
+    let center_right = Vec3::new(1.0, 0.0, -1.0);
 
-    let sphere_1 = Rc::new(Sphere::new(&center1, 100.0, Rc::new(material_ground)));
-    let sphere_2 = Rc::new(Sphere::new(&center2, 0.5, Rc::new(material_center)));
-    let sphere_3 = Rc::new(Sphere::new(&center3, 0.5, Rc::new(material_left)));
-    let sphere_4 = Rc::new(Sphere::new(&center4, 0.5, Rc::new(material_right)));
+    let sphere_ground = Rc::new(Sphere::new(&center_ground, 100.0, Rc::new(material_ground)));
+    let sphere_center = Rc::new(Sphere::new(&center, 0.5, Rc::new(material_center)));
+    let sphere_left = Rc::new(Sphere::new(&center_left, 0.5, Rc::new(material_left)));
+    let sphere_right = Rc::new(Sphere::new(&center_right, 0.5, Rc::new(material_right)));
 
     let mut world = HittableList::new();
-    world.add(sphere_1);
-    world.add(sphere_2);
-    world.add(sphere_3);
-    world.add(sphere_4);
+    world.add(sphere_ground);
+    world.add(sphere_center);
+    world.add(sphere_left);
+    world.add(sphere_right);
 
     // Camera
     let cam = Camera::new();
@@ -58,7 +58,7 @@ fn main() {
     for j in (0..image_heigth).rev() {
         for i in 0..image_width {
             let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-            for s in 0..samples_per_pixel {
+            for _s in 0..samples_per_pixel {
                 let u = (i as f64 + random_number()) / (image_width as f64 - 1.0);
                 let v = (j as f64 + random_number()) / (image_heigth as f64 - 1.0);
 
@@ -102,14 +102,16 @@ fn ray_color<T: Hittable>(r: &Ray, world: &HittableList<T>, depth: i32) -> Color
 
     let (is_hit, m) = world.hit(r, 0.001, f64::INFINITY, &mut rec);
     if is_hit {
-        let scattered: Ray;
-        let color = Color::new(0.0, 0.0, 0.0);
+        let mut attenuation = Color::new(0.0, 0.0, 0.0);
 
-        let target = &rec.p + &rec.normal + Vec3::random_unit_vector();
+        let (is_scattered, scatter_direction) = m.scatter(r, &rec, &mut attenuation);
+        let scattered_ray = Ray::new(&rec.p, &scatter_direction);
 
-        let dir = &target - &rec.p;
-        let ray = Ray::new(&rec.p, &dir);
-        return ray_color(&ray, world, depth - 1) * 0.5;
+        if is_scattered {
+            return attenuation * ray_color(&scattered_ray, &world, depth - 1);
+        }
+
+        return Color::new(0.0, 0.0, 0.0);
     }
 
     let unit_direction = Vec3::unit_vector(r.dir);

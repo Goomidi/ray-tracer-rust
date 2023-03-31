@@ -1,8 +1,4 @@
-use num::complex::ComplexFloat;
-
 use crate::utils::{random_boundaries, random_number};
-
-use core::panic;
 
 use std::{
     fmt::Display,
@@ -76,7 +72,7 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_sphere() -> Self {
-        while true {
+        loop {
             let p = Self::random_boundaries(-1.0, 1.0);
             if p.dot(&p) >= 1.0 {
                 continue;
@@ -84,7 +80,6 @@ impl Vec3 {
                 return p;
             }
         }
-        panic!("The function shouldn't be here!");
     }
 
     pub fn random_unit_vector() -> Self {
