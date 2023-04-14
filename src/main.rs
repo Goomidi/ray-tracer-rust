@@ -16,6 +16,7 @@ use hittable_list::HittableList;
 use material::{Dielectric, Lambertian, LightReflection, MaterialType, Metal};
 use ray::Ray;
 use sphere::Sphere;
+use std::f64::consts::PI;
 use std::rc::Rc;
 use utils::random_number;
 use vec::Vec3;
@@ -28,29 +29,32 @@ fn main() {
     let max_depth = 50;
 
     // World
-    let material_ground = MaterialType::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = MaterialType::Dielectric(Dielectric::new(1.5));
-    let material_right = MaterialType::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
-
-    let center_ground = Vec3::new(0.0, -100.5, -1.0);
-    let center = Vec3::new(0.0, 0.0, -1.0);
-    let center_left = Vec3::new(-1.0, 0.0, -1.0);
-    let center_right = Vec3::new(1.0, 0.0, -1.0);
-
-    let sphere_ground = Rc::new(Sphere::new(&center_ground, 100.0, Rc::new(material_ground)));
-    let sphere_center = Rc::new(Sphere::new(&center, 0.5, Rc::new(material_center)));
-    let sphere_left = Rc::new(Sphere::new(&center_left, 0.5, Rc::new(material_left)));
-    let sphere_right = Rc::new(Sphere::new(&center_right, 0.5, Rc::new(material_right)));
-
+    let r = f64::cos(PI / 4.0);
     let mut world = HittableList::new();
-    world.add(sphere_ground);
-    world.add(sphere_center);
+
+    // let material_ground = MaterialType::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_left = MaterialType::Lambertian(Lambertian::new(Color::new(0.0, 0.0, 1.0)));
+    let material_right = MaterialType::Lambertian(Lambertian::new(Color::new(1.0, 0.0, 0.0)));
+    // let material_left = MaterialType::Dielectric(Dielectric::new(1.5));
+    // let material_right = MaterialType::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+
+    // let center_ground = Vec3::new(0.0, -100.5, -1.0);
+    // let center = Vec3::new(0.0, 0.0, -1.0);
+    let center_left = Vec3::new(-r, 0.0, -1.0);
+    let center_right = Vec3::new(r, 0.0, -1.0);
+
+    // let sphere_ground = Rc::new(Sphere::new(&center_ground, 100.0, Rc::new(material_ground)));
+    // let sphere_center = Rc::new(Sphere::new(&center, 0.5, Rc::new(material_center)));
+    let sphere_left = Rc::new(Sphere::new(&center_left, r, Rc::new(material_left)));
+    let sphere_right = Rc::new(Sphere::new(&center_right, r, Rc::new(material_right)));
+
+    // world.add(sphere_ground);
+    // world.add(sphere_center);
     world.add(sphere_left);
     world.add(sphere_right);
 
     // Camera
-    let cam = Camera::new();
+    let cam = Camera::new(90.0, aspect_ratio);
 
     // Render
     println!("P3\n{} {}\n255", image_width, image_heigth);
