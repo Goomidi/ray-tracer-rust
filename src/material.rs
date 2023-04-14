@@ -1,6 +1,9 @@
+use num::traits::Pow;
+
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use crate::utils::random_number;
 use crate::vec::Vec3;
 
 pub trait LightReflection {
@@ -115,6 +118,11 @@ impl Dielectric {
     pub fn new(ir: f64) -> Self {
         Dielectric { ir }
     }
+    pub fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+        let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).pow(5)
+    }
 }
 
 impl LightReflection for Dielectric {
@@ -126,12 +134,24 @@ impl LightReflection for Dielectric {
         } else {
             self.ir
         };
+        let unit_direction = Vec3::unit_vector(r_in.direction());
 
-        let scatter_direction = Vec3::refract(
-            &Vec3::unit_vector(r_in.direction()),
-            &rec.normal,
-            refraction_ratio,
-        );
+        let cos_theta = f64::min(-unit_direction.dot(&rec.normal), 1.0);
+        let sin_theta = f64::sqrt(1.0 - cos_theta.pow(2));
+
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+
+        let scatter_direction: Vec3;
+
+        if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > random_number() {
+            scatter_direction = Vec3::reflect(&Vec3::unit_vector(r_in.direction()), &rec.normal);
+        } else {
+            scatter_direction = Vec3::refract(
+                &Vec3::unit_vector(r_in.direction()),
+                &rec.normal,
+                refraction_ratio,
+            );
+        }
 
         (true, scatter_direction)
     }

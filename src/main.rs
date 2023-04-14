@@ -29,7 +29,7 @@ fn main() {
 
     // World
     let material_ground = MaterialType::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = MaterialType::Dielectric(Dielectric::new(1.5));
+    let material_center = MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = MaterialType::Dielectric(Dielectric::new(1.5));
     let material_right = MaterialType::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
